@@ -47,12 +47,12 @@ angular.module("ngComboDatePicker", [])
             }
         }
         return res;
-    };
+    }
 
     // Function to parse an string returning either a number or 'null' (instead of NaN).
     function parseIntStrict(num) {
         return (num !== null && num !== '' && parseInt(num) != NaN)? parseInt(num) : null;
-    };
+    }
     
     // Function to parse a JSON object.
     function parseJsonPlus(jsonObj) {
@@ -186,7 +186,7 @@ angular.module("ngComboDatePicker", [])
                         dateObject.getMonth(),
                         dateObject.getFullYear()
                     ];
-                }
+                };
 
                 var shiftYear = function () {
                     if ($scope.placeHolders) {
@@ -391,7 +391,7 @@ angular.module("ngComboDatePicker", [])
                 }
                 
                 // Hide or show days and months according to the min and max dates.
-                scope.updateYearList(viewValue.month, viewValue.date)
+                scope.updateYearList(viewValue.month, viewValue.date);
                 scope.updateMonthList(viewValue.year);
                 scope.updateDateList(viewValue.month, viewValue.year);
                           
