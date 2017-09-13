@@ -125,6 +125,10 @@ angular.module("ngComboDatePicker", [])
                 $scope.ngMaxModel = new Date();
             }
 
+            $scope.yearsInDescendingOrder = function() {
+                return typeof $scope.ngYearOrder == 'string' && $scope.ngYearOrder.indexOf('des') == 0;
+            }
+
             // Watch for changes in the minimum and maximum dates.
             $scope.$watch('[ngMinModel, ngMaxModel]', function() {
                 // Update list of years (if possible).
@@ -136,7 +140,7 @@ angular.module("ngComboDatePicker", [])
                     }
 
                     // Verify if the order of the years must be reversed.
-                    if(typeof $scope.ngYearOrder == 'string' && $scope.ngYearOrder.indexOf('des') == 0) {
+                    if($scope.yearsInDescendingOrder) {
                         $scope.years.reverse();
                     }
 
@@ -172,6 +176,58 @@ angular.module("ngComboDatePicker", [])
                      monthNames = $scope.ngMonths;
                 }
             }
+
+            $scope.currentYearOmitted = false;
+
+            $scope.updateYearList = function(month, day) {
+                var currentDate = new Date();
+                var currentDay = currentDate.getDate();
+                var currentMonth = currentDate.getMonth();
+                var currentYear = currentDate.getFullYear();
+
+                // Check if the selected month is after current month
+                // OR if selected month is current month, but selected day is after current day
+                if (month > currentMonth || (month === currentMonth && day > currentDay)) {
+                    if (!$scope.currentYearOmitted) {
+                        // Check the order of the years.
+                        if ($scope.yearsInDescendingOrder) {
+                            // If there is a placeholder, shift it off first before shifting the year (the first item in the list would be the current year)
+                            if ($scope.placeHolders) {
+                                var placeholder = $scope.years.shift();
+                                $scope.years.shift(); // shift off the current year
+                                $scope.years.unshift(placeholder); // unshift the placeholder back onto the array.
+                            } else {
+                                $scope.years.shift();
+                            }
+                        } else {
+                            // Years are in ascending order, so current year is the last item in the list
+                            $scope.years.pop();
+                        }
+                        $scope.currentYearOmitted = true;
+                    }
+                } else {
+                    if ($scope.currentYearOmitted) {
+                        var year = { value: currentYear, name: currentYear };
+                        // Check the order of the years.
+                        if ($scope.yearsInDescendingOrder) {
+                            // If there is a placeholder, shift it off first before unshifting the year (the first item in the list would be the current year)
+                            if ($scope.placeHolders) {
+                                var placeholder = $scope.years.shift();
+                                $scope.years.unshift(year); // unshift the current year
+                                $scope.years.unshift(placeholder); // unshift the placeholder back onto the array.
+                            } else {
+                                $scope.years.unshift(year);
+                            }
+                        } else {
+                            // Years are in ascending order, so current year is the last item in the list
+                            $scope.years.push(year);
+                        }
+
+                        $scope.currentYearOmitted = false;   
+                    }
+                }
+
+            };
             
             // Update list of months.
             $scope.updateMonthList = function(year) {
@@ -269,6 +325,7 @@ angular.module("ngComboDatePicker", [])
             // Set watch function for update the view value.
             scope.$watch('date + "-" + month + "-" + year', function(newValue, oldValue) {
                 if(newValue != oldValue) {
+                    scope.updateYearList(scope.month, scope.date);
                     ngModelCtrl.$setViewValue({
                         date: scope.date,
                         month: scope.month,
